@@ -1,0 +1,2 @@
+nuget Microsoft.ApplicationInsights.WindowsServer
+nuget Suave
