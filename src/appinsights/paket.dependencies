@@ -1,2 +1,2 @@
-nuget Microsoft.ApplicationInsights.WindowsServer
+nuget Microsoft.ApplicationInsights.WindowsServer content:none
 nuget Suave
