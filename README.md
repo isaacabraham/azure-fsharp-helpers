@@ -1,7 +1,7 @@
 # azure-fsharp-helpers
 A set of files which help provide better support for Azure with a number of F# projects.
 
-## AppInsights
+## AppInsights on Suave
 paket usage: ``github isaacabraham/azure-fsharp-helpers src/appinsights/suave-appinsights.fs``
 
 This file adds a new ``Suave.Azure.ApplicationInsights`` module which supports: -
@@ -13,13 +13,10 @@ This file adds a new ``Suave.Azure.ApplicationInsights`` module which supports: 
 Example usage: -
 
 ```fsharp
-choose
-  [ footballApp
-    enigmaApp
-    sudokuApp
-    basicApp staticFileRoot
-    pageNotFound staticFileRoot ]
-|> ApplicationInsights.withRequestTracking ApplicationInsights.buildApiOperationName
+ choose
+  [ GET >=> OK "HELLO WORLD"
+    POST >=> OK "BYE BYE" ] // Basic Suave routes
+|> ApplicationInsights.withRequestTracking ApplicationInsights.buildApiOperationName // App Insights into it
 ```
 
 ## Azure App Service Configuration settings
