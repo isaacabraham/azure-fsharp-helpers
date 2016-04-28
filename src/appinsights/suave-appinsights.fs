@@ -22,27 +22,34 @@ let buildApiOperationName (uri:Uri) =
 /// Tracks a web part request with App Insights.
 let withRequestTracking buildOperationName (webPart:WebPart) context =
     // Start recording a new operation.
-    let operation = telemetryClient.StartOperation<RequestTelemetry>(buildOperationName context.request.url)
-    
+    let operation = telemetryClient.StartOperation<RequestTelemetry>(buildOperationName context.request.url)    
+
+    // Set basic AI details
+    operation.Telemetry.Url <- context.request.url
+    operation.Telemetry.HttpMethod <- context.request.``method``.ToString()
+
     async {                
         try
             try
                 // Execute the webpart
                 let! context = webPart context
             
-                // Map the properties of the result into an AppInsights operation
+                // Set response code + success
                 context
                 |> Option.iter(fun context ->
-                    operation.Telemetry.Url <- context.request.url
-                    operation.Telemetry.HttpMethod <- context.request.``method``.ToString()
                     operation.Telemetry.ResponseCode <- context.response.status.code.ToString()
                     operation.Telemetry.Success <- Nullable (int context.response.status.code < 400))
             
                 return context
             with ex ->
-                // Hoppla! log the error and re-throw it
+                // Hoppla! Fail the request
+                operation.Telemetry.ResponseCode <- "500"
+                operation.Telemetry.Success <- Nullable false
+
+                // log the error
                 let telemetry = ExceptionTelemetry(ex, HandledAt = ExceptionHandledAt.Unhandled)
                 telemetryClient.TrackException telemetry
+
                 raise ex
                 return None
         finally
