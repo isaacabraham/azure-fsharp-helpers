@@ -36,13 +36,13 @@ module private AzureConfiguration =
             | AppSetting(key, value) -> ConfigurationManager.AppSettings.[key] <- value
             | DetailedConnectionString (name, connection, provider) ->
                 let setting = ConfigurationManager.ConnectionStrings.[name]
-                                
-                typeof<ConfigurationElement>
-                    .GetField("_bReadOnly", BindingFlags.Instance ||| BindingFlags.NonPublic)
-                    .SetValue(setting, value = false)
+                if setting <> null then                
+                    typeof<ConfigurationElement>
+                        .GetField("_bReadOnly", BindingFlags.Instance ||| BindingFlags.NonPublic)
+                        .SetValue(setting, value = false)
                 
-                setting.ConnectionString <- connection                
-                provider |> Option.iter(fun provider -> setting.ProviderName <- provider)    
+                    setting.ConnectionString <- connection                
+                    provider |> Option.iter(fun provider -> setting.ProviderName <- provider)    
             | _ -> ()
 
 /// Applies Azure Application Settings stored as Environment variables into the Configuration Manager.
