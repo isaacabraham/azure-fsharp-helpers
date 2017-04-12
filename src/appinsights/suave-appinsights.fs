@@ -24,7 +24,7 @@ let buildApiOperationName (uri:Uri) (meth:HttpMethod) =
 /// Tracks a web part request with App Insights.
 let withRequestTracking buildOperationName (webPart:WebPart) context =
     // Start recording a new operation.
-    let operation = telemetryClient.StartOperation<RequestTelemetry>(buildOperationName context.request.url context.request.``method``)
+    let operation = telemetryClient.StartOperation<RequestTelemetry>(operationName = buildOperationName context.request.url context.request.``method``)
 
     // Set basic AI details
     operation.Telemetry.Url <- context.request.url
