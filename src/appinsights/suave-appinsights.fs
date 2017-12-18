@@ -15,18 +15,19 @@ open System.Configuration
 let telemetryClient = TelemetryClient()
 
 /// Builds an operation name from a typical "/api/" endpoint.
-let buildApiOperationName (uri:Uri) =
-    if uri.AbsolutePath.StartsWith "/api/" && uri.Segments.Length > 2 then "/api/" + uri.Segments.[2]
-    else uri.AbsolutePath
+let buildApiOperationName (uri:Uri) (meth:HttpMethod) =
+    let meth = meth.ToString()
+    if uri.AbsolutePath.StartsWith "/api/" && uri.Segments.Length > 2
+    then meth + " /api/" + uri.Segments.[2]
+    else meth + " " + uri.AbsolutePath
 
 /// Tracks a web part request with App Insights.
 let withRequestTracking buildOperationName (webPart:WebPart) context =
     // Start recording a new operation.
-    let operation = telemetryClient.StartOperation<RequestTelemetry>(buildOperationName context.request.url)    
+    let operation = telemetryClient.StartOperation<RequestTelemetry>(operationName = buildOperationName context.request.url context.request.``method``)
 
     // Set basic AI details
     operation.Telemetry.Url <- context.request.url
-    operation.Telemetry.HttpMethod <- context.request.``method``.ToString()
 
     async {                
         try
@@ -47,7 +48,7 @@ let withRequestTracking buildOperationName (webPart:WebPart) context =
                 operation.Telemetry.Success <- Nullable false
 
                 // log the error
-                let telemetry = ExceptionTelemetry(ex, HandledAt = ExceptionHandledAt.Unhandled)
+                let telemetry = ExceptionTelemetry(ex)
                 telemetryClient.TrackException telemetry
 
                 raise ex
